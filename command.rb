@@ -10,7 +10,7 @@ class Command
   def parse(output)
     lines = output.strip.split("\n")
     # Skip header lines
-    lines = lines.drop(3)
+    lines = lines.drop(2)
     lines.map do |line|
       fields = line.split(/\s{2,}/) # Split based on two or more spaces
       AppProcess.new(*fields)
@@ -20,28 +20,15 @@ class Command
   def exec
     processes, error = [], nil
 
-    Open3.popen3(to_s) do |stdin, stdout, stderr, wait_thr|
-      output = ""
-      error_output = ""
+    stdout, stderr, status = Open3.capture3(to_s)
+    output = stdout + stderr
 
-      # Read stdout and stderr streams
-      stdout_thread = Thread.new { output << stdout.read }
-      stderr_thread = Thread.new { error_output << stderr.read }
-
-      # Wait for threads to finish
-      stdout_thread.join
-      stderr_thread.join
-
-      # Get the exit status
-      exit_status = wait_thr.value
-
-      if exit_status.success?
-        processes = parse(output)
-      else
-        error = "Command '#{to_s}' exited with error: #{error_output}"
-      end
-    end
+    processes = parse(output) if status.success?
 
     [processes, error]
   end
 end
+
+# # Example usage:
+# command = Command.new
+# processes, error = command.exec
