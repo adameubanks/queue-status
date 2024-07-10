@@ -26,6 +26,10 @@ function queue_overview(){
         for sinfo_data in $(sinfo -h -o "%P/%C/%A/%l/%m");do
                 read -r partition active_cpu free_cpu other_cpu total_cpu active_node free_node time_limit total_mem <<< $(echo $sinfo_data| sed 's/\// /g')
                 read -r pending_jobs run_jobs <<< $(squeue -p $partition -h -t R,PD | awk '{print $5}'|sort|uniq -c| awk '{print $1}')
+                
+                # Check if no jobs are running or pending and set them to 0 if so
+                run_jobs=${run_jobs:-0}
+                pending_jobs=${pending_jobs:-0}
 
                 if [[ $partition == "gpu" ]];then
                         UsageFactor="3"

@@ -10,7 +10,7 @@ class Command
   def parse(output)
     lines = output.strip.split("\n")
     # Skip header lines
-    lines = lines.drop(2)
+    lines = lines.drop(3)
     lines.map do |line|
       fields = line.split(/\s{2,}/) # Split based on two or more spaces
       AppProcess.new(*fields)
