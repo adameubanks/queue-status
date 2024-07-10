@@ -2,6 +2,7 @@
 PROGNAME=$(basename $0)
 SLURM_PARTITION="/opt/slurm/current/etc/partitions"
 SLURM_BIN="/opt/slurm/current/bin"
+SINFO_CMD="/opt/slurm/current/bin/sinfo"
 
 function usage() {
 cat <<-EOF
@@ -23,22 +24,65 @@ function queue_overview(){
         printf "$line" "(partition)" "Cores" "Cores" "Running" "Pending" "Limit" "Charge"
         for i in {1..70};do printf "=";done; printf "\n"
 
-        for sinfo_data in $(sinfo -h -o "%P/%C/%A/%l/%m");do
+        for sinfo_data in $($SINFO_CMD -h -o "%P/%C/%A/%l/%m");do
                 read -r partition active_cpu free_cpu other_cpu total_cpu active_node free_node time_limit total_mem <<< $(echo $sinfo_data| sed 's/\// /g')
-                read -r pending_jobs run_jobs <<< $(squeue -p $partition -h -t R,PD | awk '{print $5}'|sort|uniq -c| awk '{print $1}')
-                
-                # Check if no jobs are running or pending and set them to 0 if so
-                [[ -z $run_jobs ]] && run_jobs=0
-                [[ -z $pending_jobs ]] && pending_jobs=0
-                
-                printf "$line" "$partition" "$total_cpu" "$free_cpu" "$run_jobs" "$pending_jobs" "$time_limit" "$total_mem"
+                read -r pending_jobs run_jobs <<< $(/opt/slurm/current/bin/squeue -p $partition -h -t R,PD | awk '{print $5}'|sort|uniq -c| awk '{print $1}')
+
+                if [[ $partition == "gpu" ]];then
+                        UsageFactor="3"
+                elif [[ $partition == "dev" ]];then
+                        UsageFactor="0"
+                else
+                        UsageFactor="1"
+                fi
+
+                printf "$line" "$partition" "$total_cpu" "$free_cpu" "$run_jobs" "$pending_jobs" "$time_limit $time" "$UsageFactor"
         done
+exit 0
+}
+
+function queue_detail() {
+        line="%-8s %-14s %-13s %-13s %-13s %-13s %-25s %-13s\n"
+        printf "$line" "STATE" "NODE" "CPUS(A/I/O/T)" "TOTALMEM(MB)" "ALLOCMEM(MB)" "AVAILMEM(MB)" "GRES(M:T:A)" "JOBS"
+        for i in {1..110};do printf "=";done; printf "\n"
+
+        for i in $(sinfo -p $PARTITION -h -N --format=%15N|sort);
+        do
+                read -r STATE NODE CPUS TOTALMEM ALLOCMEM GRES <<< $($SLURM_BIN/sinfo -p $PARTITION -n $i -h -O "statecompact,nodelist,cpusstate,memory,allocmem,gres")
+                GresUsed=$($SLURM_BIN/scontrol -d show node $i | grep "GresUsed" | cut -d ":" -f3 | cut -d "(" -f1)
+                JOBS=$($SLURM_BIN/squeue -h -t R -w $i|wc -l)
+                AVAILCPU=$(echo $CPUS | cut -d "/" -f2|sed 's/ //g')
+                AVAILMEM=$(expr $TOTALMEM - $ALLOCMEM)
+
+                if [[ $PARTITION != *"gpu"* ]];then GRES='';resused='';fi
+
+                if [[ $COUNT -eq "2" ]];then
+                        if [[ $AVAILCPU -ge $NUM_CPUS ]] && [[ $AVAILMEM -ge $NUM_MEM ]];then
+                                output
+                        fi
+                elif [[ $CHECK == "CPU" ]];then
+                        if [[ $AVAILCPU -ge $NUM_CPUS ]];then
+                                output
+                        fi
+                elif [[ $CHECK == "MEM" ]];then
+                        if [[ $AVAILMEM -ge $NUM_MEM ]];then
+                                output
+                        fi
+                else
+                        output
+                fi
+        done
+}
+
+function output() {
+    printf "$line" "$STATE" "$NODE" "$CPUS" "$TOTALMEM" "$ALLOCMEM" "$AVAILMEM" "$GRES:$GresUsed" "  $JOBS"
 }
 
 # If there is no argument show queue overview.
 if [[ "$#" -lt 1 ]];then
     queue_overview
 fi
+
 
 while getopts ":c:m:p:" opt; do
     case "${opt}" in
@@ -76,3 +120,5 @@ if [[ ! -z $NUM_MEM ]];then
 fi
 
 queue_detail
+
+exit 0
