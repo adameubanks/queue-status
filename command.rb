@@ -12,8 +12,7 @@ class Command
     # Skip header lines
     lines = lines.drop(3)
     lines.map do |line|
-      fields = line.split(/\s{2,}/)
-      fields.map! { |field| field.strip.empty? ? '0' : field }
+      fields = line.split(/\s{2,}/) # Split based on two or more spaces
       AppProcess.new(*fields)
     end
   end
