@@ -1,28 +1,41 @@
-Output generated: <%= Time.now %>
-<%= @processes.inspect %>
-<pre>
-$ qlist
-</pre>
-<table class="table table-bordered">
-  <tr>
-    <th>Queue (partition)</th>
-    <th>Total Cores</th>
-    <th>Free Cores</th>
-    <th>Jobs Running</th>
-    <th>Jobs Pending</th>
-    <th>Time Limit</th>
-    <th>SU Charge</th>
-  </tr>
-  <% @processes.each do |app| %>
-  <tr>
-    <td><%= app.queue %></td>
-    <td><%= app.total_cores %></td>
-    <td><%= app.free_cores %></td>
-    <td><%= app.jobs_running %></td>
-    <td><%= app.jobs_pending %></td>
-    <td><%= app.time_limit %></td>
-    <td><%= app.su_charge %></td>
-  </tr>
-  <% end %>
+<html>
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+</head>
+<body>  
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #53565a;">
+    <a class="navbar-brand" href="/pun/sys/dashboard/">UVA Open OnDemand</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
+  Output generated: <%= Time.now %>
+  <pre>
+  $ qlist
+  </pre>
+  <table class="table table-bordered">
+    <tr>
+      <th>Queue (partition)</th>
+      <th>Total Cores</th>
+      <th>Free Cores</th>
+      <th>Jobs Running</th>
+      <th>Jobs Pending</th>
+      <th>Time Limit</th>
+      <th>SU Charge</th>
+    </tr>
+    <% @processes.each do |app| %>
+    <tr>
+      <td><%= app.queue %></td>
+      <td><%= app.total_cores %></td>
+      <td><%= app.free_cores %></td>
+      <td><%= app.jobs_running %></td>
+      <td><%= app.jobs_pending %></td>
+      <td><%= app.time_limit %></td>
+      <td><%= app.su_charge %></td>
+    </tr>
+    <% end %>
 
-</table>
+  </table>
+</body>
+</html>
