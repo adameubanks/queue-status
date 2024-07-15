@@ -10,9 +10,10 @@ class Command
   def parse(output)
     lines = output.strip.split("\n")
     # Skip header lines
-    lines = lines.drop(2)
+    lines = lines.drop(3)
     lines.map do |line|
-      fields = line.split(/\s{2,}/) # Split based on two or more spaces
+      fields = line.split(/\s{2,}/)
+      fields.map! { |field| field.strip.empty? ? '0' : field }
       AppProcess.new(*fields)
     end
   end
@@ -28,7 +29,3 @@ class Command
     [processes, error]
   end
 end
-
-# # Example usage:
-# command = Command.new
-# processes, error = command.exec
