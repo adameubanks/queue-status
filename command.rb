@@ -2,7 +2,7 @@ require 'open3'
 
 class Command
   def to_s
-    "/sfs/ceph/standard/rc-students/ood/qlist/local_qlist"
+    "/sfs/ceph/standard/rc-students/ood/qlist/views/local_qlist"
   end
 
   AppProcess = Struct.new(:queue, :total_cores, :free_cores, :jobs_running, :jobs_pending, :time_limit, :su_charge)
