@@ -26,7 +26,23 @@ function queue_overview(){
 
         for sinfo_data in $($SINFO_CMD -h -o "%P/%C/%A/%l/%m");do
                 read -r partition active_cpu free_cpu other_cpu total_cpu active_node free_node time_limit total_mem <<< $(echo $sinfo_data| sed 's/\// /g')
+                
+                # Set default values to zero if unset or empty
+                partition=${partition:-0}
+                active_cpu=${active_cpu:-0}
+                free_cpu=${free_cpu:-0}
+                other_cpu=${other_cpu:-0}
+                total_cpu=${total_cpu:-0}
+                active_node=${active_node:-0}
+                free_node=${free_node:-0}
+                time_limit=${time_limit:-0}
+                total_mem=${total_mem:-0}
+
                 read -r pending_jobs run_jobs <<< $(/opt/slurm/current/bin/squeue -p $partition -h -t R,PD | awk '{print $5}'|sort|uniq -c| awk '{print $1}')
+
+                # Set default values to zero if unset or empty
+                pending_jobs=${pending_jobs:-0}
+                run_jobs=${run_jobs:-0}
 
                 if [[ $partition == "gpu" ]];then
                         UsageFactor="3"
@@ -49,10 +65,25 @@ function queue_detail() {
         for i in $(sinfo -p $PARTITION -h -N --format=%15N|sort);
         do
                 read -r STATE NODE CPUS TOTALMEM ALLOCMEM GRES <<< $($SLURM_BIN/sinfo -p $PARTITION -n $i -h -O "statecompact,nodelist,cpusstate,memory,allocmem,gres")
+                
+                # Set default values to zero if unset or empty
+                STATE=${STATE:-0}
+                NODE=${NODE:-0}
+                CPUS=${CPUS:-0}
+                TOTALMEM=${TOTALMEM:-0}
+                ALLOCMEM=${ALLOCMEM:-0}
+                GRES=${GRES:-0}
+                
                 GresUsed=$($SLURM_BIN/scontrol -d show node $i | grep "GresUsed" | cut -d ":" -f3 | cut -d "(" -f1)
                 JOBS=$($SLURM_BIN/squeue -h -t R -w $i|wc -l)
                 AVAILCPU=$(echo $CPUS | cut -d "/" -f2|sed 's/ //g')
                 AVAILMEM=$(expr $TOTALMEM - $ALLOCMEM)
+
+                # Set default values to zero if unset or empty
+                GresUsed=${GresUsed:-0}
+                JOBS=${JOBS:-0}
+                AVAILCPU=${AVAILCPU:-0}
+                AVAILMEM=${AVAILMEM:-0}
 
                 if [[ $PARTITION != *"gpu"* ]];then GRES='';resused='';fi
 
