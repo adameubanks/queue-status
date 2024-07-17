@@ -9,9 +9,7 @@ This is a Sinatra application that displays queue lists for Open OnDemand at the
 
 2. Insert the repository link and name the app `qlist`
 
-3. Open the shell in your app and make the hdquota script executable by running `chmod +x local_qlist`
-
-4. Open the app to get a real-time display of storage use
+3. Open the app to get a real-time display of storage use
 
 ## Contact
 
