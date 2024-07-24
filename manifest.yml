@@ -1,4 +1,4 @@
-name: qlist
+name: Queue Status
 description: View jobs and cores in a queue
 icon: fas://server
 category: Files
