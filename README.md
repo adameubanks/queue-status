@@ -9,7 +9,7 @@ This is a Sinatra application that displays queue lists for Open OnDemand at the
 
 2. Insert the repository link and name the app `QueueStatus`
 
-3. Open the app to get a real-time display of storage use
+3. Open the app to see the queues for each partition
 
 ## Contact
 
